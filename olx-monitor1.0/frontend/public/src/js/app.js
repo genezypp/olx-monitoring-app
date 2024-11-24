@@ -1,11 +1,10 @@
 document.getElementById("login-form").addEventListener("submit", async (e) => {
-    e.preventDefault(); // Zapobiega odœwie¿eniu strony
-
+    e.preventDefault();
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("http://127.0.0.1:5000/token", {
+        const response = await fetch("/token", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -16,8 +15,10 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
         const result = await response.json();
 
         if (response.ok) {
-            document.getElementById("response-message").innerHTML =
-                `<div class="alert alert-success">Login successful! Token: ${result.access_token}</div>`;
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("dashboard-section").style.display = "block";
+            document.getElementById("response-message").innerHTML = "";
+            fetchProfiles();
         } else {
             document.getElementById("response-message").innerHTML =
                 `<div class="alert alert-danger">Error: ${result.detail}</div>`;
@@ -27,3 +28,49 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
             `<div class="alert alert-danger">Connection error: ${error.message}</div>`;
     }
 });
+
+async function fetchProfiles() {
+    const response = await fetch("/profiles");
+    const profiles = await response.json();
+    const profilesList = document.getElementById("profiles-list");
+    profilesList.innerHTML = "";
+    profiles.forEach(profile => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${profile.id}</td>
+            <td>${profile.name}</td>
+            <td>${profile.keyword || "-"}</td>
+            <td>
+                <button class="btn btn-danger" onclick="deleteProfile(${profile.id})">Delete</button>
+            </td>
+        `;
+        profilesList.appendChild(row);
+    });
+}
+
+async function addProfile(e) {
+    e.preventDefault();
+    const name = document.getElementById("profile-name").value;
+    const keyword = document.getElementById("profile-keyword").value;
+
+    const response = await fetch("/profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: Date.now(), name, keyword }),
+    });
+    if (response.ok) {
+        document.getElementById("add-profile-form").reset();
+        fetchProfiles();
+    }
+}
+
+async function deleteProfile(profileId) {
+    const response = await fetch(`/profiles/${profileId}`, {
+        method: "DELETE",
+    });
+    if (response.ok) {
+        fetchProfiles();
+    }
+}
+
+document.getElementById("add-profile-form").addEventListener("submit", addProfile);

@@ -1,5 +1,5 @@
 import sqlite3
-from config import DATABASE_URL
+from common.config import DATABASE_URL
 
 def execute_query(query, params=None):
     """Execute a query on the database."""

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -9,6 +9,7 @@ import jwt
 
 from .db import engine, Base, get_db
 from .models import SearchProfile as DBSearchProfile
+from .olx_api import OLXAPIClient  # Import klienta OLX API
 
 # Tworzenie instancji aplikacji FastAPI
 app = FastAPI()
@@ -29,6 +30,8 @@ fake_users_db = {
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "your_secret_key"  # Replace with a secure key
+
+olx_client = OLXAPIClient()  # Inicjalizacja klienta OLX API
 
 
 class User(BaseModel):
@@ -83,13 +86,11 @@ async def root():
 # Endpointy CRUD dla profili wyszukiwania
 @app.get("/profiles", response_model=List[SearchProfile])
 async def get_profiles(db: Session = Depends(get_db)):
-    """Pobiera liste wszystkich profili wyszukiwania."""
     return db.query(DBSearchProfile).all()
 
 
 @app.post("/profiles", response_model=SearchProfile)
 async def create_profile(profile: SearchProfile, db: Session = Depends(get_db)):
-    """Tworzy nowy profil wyszukiwania."""
     db_profile = DBSearchProfile(**profile.dict(exclude_unset=True))
     db.add(db_profile)
     db.commit()
@@ -99,7 +100,6 @@ async def create_profile(profile: SearchProfile, db: Session = Depends(get_db)):
 
 @app.put("/profiles/{profile_id}", response_model=SearchProfile)
 async def update_profile(profile_id: int, updated_profile: SearchProfile, db: Session = Depends(get_db)):
-    """Aktualizuje istniejacy profil wyszukiwania."""
     db_profile = db.query(DBSearchProfile).filter(DBSearchProfile.id == profile_id).first()
     if not db_profile:
         raise HTTPException(status_code=404, detail="Profile not found")
@@ -112,10 +112,50 @@ async def update_profile(profile_id: int, updated_profile: SearchProfile, db: Se
 
 @app.delete("/profiles/{profile_id}")
 async def delete_profile(profile_id: int, db: Session = Depends(get_db)):
-    """Usuwa profil wyszukiwania."""
     db_profile = db.query(DBSearchProfile).filter(DBSearchProfile.id == profile_id).first()
     if not db_profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     db.delete(db_profile)
     db.commit()
     return {"message": "Profile deleted successfully"}
+
+
+@app.get("/auth")
+async def authenticate():
+    """Redirects the user to the OLX authentication page."""
+    return {"auth_url": olx_client.get_auth_url()}
+
+
+@app.get("/callback")
+async def callback(request: Request):
+    """Handles the OAuth callback and exchanges the authorization code for a token."""
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Authorization code not provided")
+    try:
+        olx_client.authenticate(authorization_code=code)
+        return {"message": "Authenticated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/profiles/{profile_id}/listings")
+async def get_listings_for_profile(profile_id: int, db: Session = Depends(get_db)):
+    """Fetches listings from OLX API based on a search profile."""
+    profile = db.query(DBSearchProfile).filter(DBSearchProfile.id == profile_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    params = {
+        "keyword": profile.keyword,
+        "min_price": profile.min_price,
+        "max_price": profile.max_price,
+        "location": profile.location,
+        "category": profile.category,
+    }
+
+    try:
+        listings = olx_client.get_listings(params)
+        return {"listings": listings}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

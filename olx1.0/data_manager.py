@@ -1,7 +1,7 @@
 from database import execute_query
 
 def fetch_filtered_ads(keyword=None, min_price=None, max_price=None, location=None):
-    """Pobierz og³oszenia z uwzglêdnieniem filtrów."""
+    """Pobierz ogloszenia z uwzglednieniem filtrow."""
     query = "SELECT * FROM ads WHERE 1=1"
     params = []
 

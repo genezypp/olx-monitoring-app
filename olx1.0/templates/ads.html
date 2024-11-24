@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OLX Ads</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>OLX Ads</h1>
+    <form method="get" action="/ads">
+        <input type="text" name="keyword" placeholder="Search by keyword">
+        <input type="number" name="min_price" placeholder="Min Price">
+        <input type="number" name="max_price" placeholder="Max Price">
+        <input type="text" name="location" placeholder="Location">
+        <button type="submit">Search</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Location</th>
+                <th>Date Added</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ad in ads %}
+            <tr>
+                <td>{{ ad.title }}</td>
+                <td>{{ ad.price }}</td>
+                <td>{{ ad.location }}</td>
+                <td>{{ ad.date_added }}</td>
+                <td>{{ ad.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

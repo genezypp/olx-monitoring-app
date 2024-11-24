@@ -1,29 +1,16 @@
-from fastapi import FastAPI
-from database import init_db
-from data_manager import fetch_ads
+from fastapi import Request, Query
+from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-import config
+from data_manager import fetch_filtered_ads
 
-app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
-# Inicjalizacja bazy danych
-init_db()
-
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head><title>OLX Monitoring</title></head>
-    <body>
-        <h1>OLX Monitoring App</h1>
-        <p>Backend is running successfully!</p>
-        <p>Visit /ads to see fetched ads.</p>
-    </body>
-    </html>
-    """
-
-@app.get("/ads")
-async def get_ads():
-    ads = fetch_ads()
-    return {"ads": ads}
+@app.get("/ads", response_class=HTMLResponse)
+async def show_ads(request: Request,
+                   keyword: str = Query(None),
+                   min_price: float = Query(None),
+                   max_price: float = Query(None),
+                   location: str = Query(None)):
+    """Wyœwietla og³oszenia z bazy z mo¿liwoœci¹ filtrowania."""
+    ads = fetch_filtered_ads(keyword, min_price, max_price, location)
+    return templates.TemplateResponse("ads.html", {"request": request, "ads": ads})

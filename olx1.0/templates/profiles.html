@@ -63,8 +63,8 @@
                         <input type="number" name="max_price" value="{{ profile.max_price }}">
                         <input type="text" name="location" value="{{ profile.location }}">
                         <select name="category">
-                            <option value="electronics/phones" {% if profile.category == "electronics/phones" %}selected{% endif %}>Electronics > Phones</option>
-                            <option value="electronics/accessories" {% if profile.category == "electronics/accessories" %}selected{% endif %}>Electronics > Accessories</option>
+                            <option value="electronics/phones" {% if profile.category= ="electronics/phones" %}selected{% endif %}>Electronics > Phones</option>
+                            <option value="electronics/accessories" {% if profile.category= ="electronics/accessories" %}selected{% endif %}>Electronics > Accessories</option>
                         </select>
                         <select name="condition">
                             <option value="new" {% if profile.condition= ="new" %}selected{% endif %}>New</option>

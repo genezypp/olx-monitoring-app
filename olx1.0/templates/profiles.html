@@ -67,9 +67,9 @@
                             <option value="electronics/accessories" {% if profile.category= ="electronics/accessories" %}selected{% endif %}>Electronics > Accessories</option>
                         </select>
                         <select name="condition">
-                            <option value="new" {% if profile.condition= ="new" %}selected{% endif %}>New</option>
-                            <option value="used" {% if profile.condition= ="used" %}selected{% endif %}>Used</option>
-                            <option value="damaged" {% if profile.condition= ="damaged" %}selected{% endif %}>Damaged</option>
+                            <option value="new" {% if profile.condition == "new" %}selected{% endif %}>New</option>
+                            <option value="used" {% if profile.condition == "used" %}selected{% endif %}>Used</option>
+                            <option value="damaged" {% if profile.condition == "damaged" %}selected{% endif %}>Damaged</option>
                         </select>
                         <button type="submit">Save</button>
                     </form>

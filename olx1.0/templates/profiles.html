@@ -3,40 +3,31 @@
 <head>
     <title>Manage Profiles</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script>
-        async function loadCategories() {
-            const response = await fetch('/categories');
-            const data = await response.json();
-            const select = document.getElementById('category-select');
-            data.categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                select.appendChild(option);
-            });
-        }
-        window.onload = loadCategories;
-    </script>
 </head>
 <body>
     <h1>Manage Profiles</h1>
 
-    <!-- Add new profile -->
+    <!-- Add Profile Form -->
     <form method="post" action="/profiles">
-        <label>Name:</label>
-        <input type="text" name="name" required>
-        <label>Keyword:</label>
-        <input type="text" name="keyword">
-        <label>Min Price:</label>
-        <input type="number" name="min_price" step="0.01">
-        <label>Max Price:</label>
-        <input type="number" name="max_price" step="0.01">
-        <label>Location:</label>
-        <input type="text" name="location">
-        <label>Category:</label>
-        <select id="category-select" name="category"></select>
-        <label>Condition:</label>
-        <select name="condition">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="keyword">Keyword:</label>
+        <input type="text" id="keyword" name="keyword">
+        <label for="min_price">Min Price:</label>
+        <input type="number" id="min_price" name="min_price">
+        <label for="max_price">Max Price:</label>
+        <input type="number" id="max_price" name="max_price">
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location">
+        <label for="category">Category:</label>
+        <select id="category" name="category">
+            <option value="">Select a category</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        <label for="condition">Condition:</label>
+        <select id="condition" name="condition">
             <option value="new">New</option>
             <option value="used">Used</option>
             <option value="damaged">Damaged</option>
@@ -44,7 +35,7 @@
         <button type="submit">Add Profile</button>
     </form>
 
-    <!-- Existing profiles -->
+    <!-- Profiles Table -->
     <h2>Existing Profiles</h2>
     <table>
         <thead>
@@ -70,17 +61,25 @@
                 <td>{{ profile.category }}</td>
                 <td>{{ profile.condition }}</td>
                 <td>
-                    <form method="post" action="/profiles/{{ profile.id }}/edit">
-                        <input type="hidden" name="name" value="{{ profile.name }}">
-                        <input type="hidden" name="keyword" value="{{ profile.keyword }}">
-                        <input type="hidden" name="min_price" value="{{ profile.min_price }}">
-                        <input type="hidden" name="max_price" value="{{ profile.max_price }}">
-                        <input type="hidden" name="location" value="{{ profile.location }}">
-                        <input type="hidden" name="category" value="{{ profile.category }}">
-                        <input type="hidden" name="condition" value="{{ profile.condition }}">
+                    <form method="post" action="/profiles/{{ profile.id }}/edit" style="display:inline;">
+                        <input type="text" name="name" value="{{ profile.name }}" required>
+                        <input type="text" name="keyword" value="{{ profile.keyword }}">
+                        <input type="number" name="min_price" value="{{ profile.min_price }}">
+                        <input type="number" name="max_price" value="{{ profile.max_price }}">
+                        <input type="text" name="location" value="{{ profile.location }}">
+                        <select name="category">
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if profile.category= =category.id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="condition">
+                            <option value="new" {% if profile.condition= ="new" %}selected{% endif %}>New</option>
+                            <option value="used" {% if profile.condition= ="used" %}selected{% endif %}>Used</option>
+                            <option value="damaged" {% if profile.condition= ="damaged" %}selected{% endif %}>Damaged</option>
+                        </select>
                         <button type="submit">Edit</button>
                     </form>
-                    <form method="post" action="/profiles/{{ profile.id }}/delete">
+                    <form method="post" action="/profiles/{{ profile.id }}/delete" style="display:inline;">
                         <button type="submit">Delete</button>
                     </form>
                 </td>

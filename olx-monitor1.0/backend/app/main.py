@@ -2,14 +2,14 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
-import jwt
 from fastapi.staticfiles import StaticFiles
+import jwt
+
+# Tworzenie instancji aplikacji FastAPI
+app = FastAPI()
 
 # Montowanie plików statycznych
 app.mount("/static", StaticFiles(directory="frontend/public/src"), name="static")
-
-
-app = FastAPI()
 
 # Fake database for demonstration
 fake_users_db = {

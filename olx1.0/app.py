@@ -11,6 +11,6 @@ async def show_ads(request: Request,
                    min_price: float = Query(None),
                    max_price: float = Query(None),
                    location: str = Query(None)):
-    """Wyœwietla og³oszenia z bazy z mo¿liwoœci¹ filtrowania."""
+    """Wyswietla ogloszenia z bazy z mo¿liwoœcia filtrowania."""
     ads = fetch_filtered_ads(keyword, min_price, max_price, location)
     return templates.TemplateResponse("ads.html", {"request": request, "ads": ads})

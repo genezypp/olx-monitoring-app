@@ -6,7 +6,7 @@ from data_manager import fetch_filtered_ads, get_all_profiles, create_profile, u
 # Tworzenie instancji FastAPI
 app = FastAPI()
 
-# Konfiguracja szablonów Jinja2
+# Konfiguracja szablonow Jinja2
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
@@ -37,7 +37,7 @@ async def add_profile(name: str, keyword: str = None, min_price: float = None, m
 
 @app.put("/profiles/{profile_id}")
 async def modify_profile(profile_id: int, name: str, keyword: str = None, min_price: float = None, max_price: float = None, location: str = None):
-    """Aktualizuje istniej¹cy profil wyszukiwania."""
+    """Aktualizuje istniejacy profil wyszukiwania."""
     success = update_profile(profile_id, name, keyword, min_price, max_price, location)
     if not success:
         raise HTTPException(status_code=404, detail="Profile not found")

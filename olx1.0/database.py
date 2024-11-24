@@ -34,7 +34,9 @@ def create_search_profiles_table():
             keyword TEXT,
             min_price REAL,
             max_price REAL,
-            location TEXT
+            location TEXT,
+            category TEXT,
+            condition TEXT
         )
     ''')
     conn.commit()

@@ -3,6 +3,11 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 import jwt
+from fastapi.staticfiles import StaticFiles
+
+# Montowanie plików statycznych
+app.mount("/static", StaticFiles(directory="frontend/public/src"), name="static")
+
 
 app = FastAPI()
 

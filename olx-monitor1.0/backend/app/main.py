@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
+
 import jwt
 
 app = FastAPI()
@@ -39,3 +41,12 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    @app.get("/")
+async def root():
+    return {"message": "Welcome to the OLX Monitor API"}
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    with open("frontend/public/index.html", "r") as file:
+        return file.read()

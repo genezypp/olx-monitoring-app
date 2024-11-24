@@ -9,7 +9,7 @@ import jwt
 # Tworzenie instancji aplikacji FastAPI
 app = FastAPI()
 
-# Montowanie plików statycznych
+# Montowanie plikow statycznych
 app.mount("/static", StaticFiles(directory="frontend/public/src"), name="static")
 
 # Fake database for demonstration
@@ -70,7 +70,7 @@ async def root():
 # Endpointy CRUD dla profili wyszukiwania
 @app.get("/profiles", response_model=List[SearchProfile])
 async def get_profiles():
-    """Pobiera listê wszystkich profili wyszukiwania."""
+    """Pobiera liste wszystkich profili wyszukiwania."""
     return search_profiles
 
 @app.post("/profiles", response_model=SearchProfile)
@@ -81,7 +81,7 @@ async def create_profile(profile: SearchProfile):
 
 @app.put("/profiles/{profile_id}", response_model=SearchProfile)
 async def update_profile(profile_id: int, updated_profile: SearchProfile):
-    """Aktualizuje istniej¹cy profil wyszukiwania."""
+    """Aktualizuje istniejacy profil wyszukiwania."""
     for i, profile in enumerate(search_profiles):
         if profile.id == profile_id:
             search_profiles[i] = updated_profile

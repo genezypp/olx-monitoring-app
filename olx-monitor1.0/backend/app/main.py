@@ -7,14 +7,14 @@ from typing import List, Optional
 from pydantic import BaseModel
 import jwt
 
-from .db import engine, Base, get_db
-from .models import SearchProfile as DBSearchProfile, Listing as DBListing
-from .olx_api import OLXAPIClient  # Import klienta OLX API
+from backend.app.db import engine, Base, get_db
+from backend.app.models import SearchProfile as DBSearchProfile, Listing as DBListing
+from backend.app.olx_api import OLXAPIClient  # Import klienta OLX API
 
 # Tworzenie instancji aplikacji FastAPI
 app = FastAPI()
 
-# Montowanie plikow statycznych
+# Montowanie plików statycznych
 app.mount("/static", StaticFiles(directory="frontend/public/src"), name="static")
 
 # Tworzenie tabel w bazie danych

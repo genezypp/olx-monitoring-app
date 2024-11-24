@@ -1,7 +1,34 @@
 from database import execute_query
 
+def fetch_filtered_ads(keyword=None, min_price=None, max_price=None, location=None):
+    """
+    Fetch ads from the database with optional filters.
+    """
+    query = "SELECT * FROM ads WHERE 1=1"
+    params = []
+
+    if keyword:
+        query += " AND title LIKE ?"
+        params.append(f"%{keyword}%")
+    if min_price is not None:
+        query += " AND price >= ?"
+        params.append(min_price)
+    if max_price is not None:
+        query += " AND price <= ?"
+        params.append(max_price)
+    if location:
+        query += " AND location LIKE ?"
+        params.append(f"%{location}%")
+
+    return [
+        {"id": row[0], "title": row[1], "price": row[2], "location": row[3], "date_added": row[4], "description": row[5]}
+        for row in execute_query(query, params)
+    ]
+
 def get_all_profiles():
-    """Retrieve all search profiles."""
+    """
+    Retrieve all search profiles.
+    """
     query = "SELECT * FROM search_profiles"
     rows = execute_query(query)
     return [
@@ -12,54 +39,37 @@ def get_all_profiles():
             "min_price": row[3],
             "max_price": row[4],
             "location": row[5],
-            "category": row[6],
+            "category": row[6]
         }
         for row in rows
     ]
 
 def create_profile(name, keyword=None, min_price=None, max_price=None, location=None, category=None):
-    """Create a new search profile."""
+    """
+    Create a new search profile.
+    """
     query = """
-        INSERT INTO search_profiles (name, keyword, min_price, max_price, location, category)
-        VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO search_profiles (name, keyword, min_price, max_price, location, category)
+    VALUES (?, ?, ?, ?, ?, ?)
     """
     params = (name, keyword, min_price, max_price, location, category)
     execute_query(query, params)
 
 def update_profile(profile_id, name, keyword=None, min_price=None, max_price=None, location=None, category=None):
-    """Update an existing search profile."""
+    """
+    Update an existing search profile.
+    """
     query = """
-        UPDATE search_profiles
-        SET name = ?, keyword = ?, min_price = ?, max_price = ?, location = ?, category = ?
-        WHERE id = ?
+    UPDATE search_profiles
+    SET name = ?, keyword = ?, min_price = ?, max_price = ?, location = ?, category = ?
+    WHERE id = ?
     """
     params = (name, keyword, min_price, max_price, location, category, profile_id)
     execute_query(query, params)
 
 def delete_profile(profile_id):
-    """Delete a search profile."""
+    """
+    Delete a search profile.
+    """
     query = "DELETE FROM search_profiles WHERE id = ?"
     execute_query(query, (profile_id,))
-
-def get_market_depth(profile_id, range_size):
-    """Calculate market depth for a given profile."""
-    query = "SELECT min_price, max_price FROM search_profiles WHERE id = ?"
-    profile = execute_query(query, (profile_id,))
-    if not profile:
-        raise ValueError("Profile not found.")
-    
-    min_price = profile[0][0]
-    max_price = profile[0][1]
-    query = """
-        SELECT price FROM ads
-        WHERE price >= ? AND price <= ?
-    """
-    ads = execute_query(query, (min_price, max_price))
-    price_ranges = {}
-    for ad in ads:
-        price = ad[0]
-        range_start = int(price // range_size) * range_size
-        range_end = range_start + range_size
-        range_key = f"{range_start}-{range_end}"
-        price_ranges[range_key] = price_ranges.get(range_key, 0) + 1
-    return [{"range": k, "count": v} for k, v in price_ranges.items()]

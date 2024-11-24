@@ -45,7 +45,7 @@ async def modify_profile(profile_id: int, name: str, keyword: str = None, min_pr
 
 @app.delete("/profiles/{profile_id}")
 async def remove_profile(profile_id: int):
-    """Usuwa istniej¹cy profil wyszukiwania."""
+    """Usuwa istniejacy profil wyszukiwania."""
     success = delete_profile(profile_id)
     if not success:
         raise HTTPException(status_code=404, detail="Profile not found")

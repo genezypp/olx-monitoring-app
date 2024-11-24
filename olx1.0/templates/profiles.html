@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Profiles</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Manage Search Profiles</h1>
+
+    <!-- Form to add a new profile -->
+    <h2>Add New Profile</h2>
+    <form method="post" action="/profiles">
+        <input type="text" name="name" placeholder="Profile Name" required>
+        <input type="text" name="keyword" placeholder="Keyword">
+        <input type="number" name="min_price" placeholder="Min Price">
+        <input type="number" name="max_price" placeholder="Max Price">
+        <input type="text" name="location" placeholder="Location">
+        <button type="submit">Add Profile</button>
+    </form>
+
+    <!-- Table to display existing profiles -->
+    <h2>Existing Profiles</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Keyword</th>
+                <th>Min Price</th>
+                <th>Max Price</th>
+                <th>Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for profile in profiles %}
+            <tr>
+                <td>{{ profile.id }}</td>
+                <td>{{ profile.name }}</td>
+                <td>{{ profile.keyword }}</td>
+                <td>{{ profile.min_price }}</td>
+                <td>{{ profile.max_price }}</td>
+                <td>{{ profile.location }}</td>
+                <td>
+                    <form method="post" action="/profiles/{{ profile.id }}/delete" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

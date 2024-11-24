@@ -11,15 +11,15 @@ init_db()
 # Tworzenie instancji FastAPI
 app = FastAPI()
 
-# Konfiguracja plików statycznych
+# Konfiguracja plikow statycznych
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Konfiguracja szablonów Jinja2
+# Konfiguracja szablonow Jinja2
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Strona g³ówna aplikacji."""
+    """Strona glowna aplikacji."""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/ads", response_class=HTMLResponse)
@@ -28,13 +28,13 @@ async def show_ads(request: Request,
                    min_price: float = Query(None),
                    max_price: float = Query(None),
                    location: str = Query(None)):
-    """Wyœwietla og³oszenia z bazy danych z filtrowaniem."""
+    """Wyswietla ogloszenia z bazy danych z filtrowaniem."""
     ads = fetch_filtered_ads(keyword, min_price, max_price, location)
     return templates.TemplateResponse("ads.html", {"request": request, "ads": ads})
 
 @app.get("/profiles", response_class=HTMLResponse)
 async def manage_profiles(request: Request):
-    """Wyœwietla stronê zarz¹dzania profilami wyszukiwania."""
+    """Wyswietla strone zarzadzania profilami wyszukiwania."""
     profiles = get_all_profiles()
     return templates.TemplateResponse("profiles.html", {"request": request, "profiles": profiles})
 

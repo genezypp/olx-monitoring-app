@@ -3,6 +3,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from data_manager import fetch_filtered_ads, get_all_profiles, create_profile, update_profile, delete_profile
 from database import init_db
+from fastapi.staticfiles import StaticFiles
+
+# Obs³uga plików statycznych
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Tworzenie instancji FastAPI
 app = FastAPI()

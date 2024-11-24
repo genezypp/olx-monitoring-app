@@ -40,6 +40,10 @@ async function fetchProfiles() {
             <td>${profile.id}</td>
             <td>${profile.name}</td>
             <td>${profile.keyword || "-"}</td>
+            <td>${profile.min_price || "-"}</td>
+            <td>${profile.max_price || "-"}</td>
+            <td>${profile.location || "-"}</td>
+            <td>${profile.category || "-"}</td>
             <td>
                 <button class="btn btn-danger" onclick="deleteProfile(${profile.id})">Delete</button>
             </td>
@@ -52,12 +56,25 @@ async function addProfile(e) {
     e.preventDefault();
     const name = document.getElementById("profile-name").value;
     const keyword = document.getElementById("profile-keyword").value;
+    const minPrice = document.getElementById("profile-min-price").value;
+    const maxPrice = document.getElementById("profile-max-price").value;
+    const location = document.getElementById("profile-location").value;
+    const category = document.getElementById("profile-category").value;
 
     const response = await fetch("/profiles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: Date.now(), name, keyword }),
+        body: JSON.stringify({
+            id: Date.now(),
+            name,
+            keyword,
+            min_price: minPrice ? parseFloat(minPrice) : null,
+            max_price: maxPrice ? parseFloat(maxPrice) : null,
+            location,
+            category,
+        }),
     });
+
     if (response.ok) {
         document.getElementById("add-profile-form").reset();
         fetchProfiles();

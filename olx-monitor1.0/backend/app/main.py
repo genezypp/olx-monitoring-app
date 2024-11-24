@@ -2,15 +2,22 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from typing import List, Optional
+from pydantic import BaseModel
 import jwt
+
+from .db import engine, Base, get_db
+from .models import SearchProfile as DBSearchProfile
 
 # Tworzenie instancji aplikacji FastAPI
 app = FastAPI()
 
-# Montowanie plików statycznych
+# Montowanie plikow statycznych
 app.mount("/static", StaticFiles(directory="frontend/public/src"), name="static")
+
+# Tworzenie tabel w bazie danych
+Base.metadata.create_all(bind=engine)
 
 # Fake database for demonstration
 fake_users_db = {
@@ -23,11 +30,13 @@ fake_users_db = {
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "your_secret_key"  # Replace with a secure key
 
+
 class User(BaseModel):
     username: str
 
+
 class SearchProfile(BaseModel):
-    id: int
+    id: Optional[int] = None
     name: str
     keyword: Optional[str] = None
     min_price: Optional[float] = None
@@ -35,8 +44,9 @@ class SearchProfile(BaseModel):
     location: Optional[str] = None
     category: Optional[str] = None
 
-# Tymczasowa baza danych dla profili wyszukiwania
-search_profiles = []
+    class Config:
+        orm_mode = True
+
 
 @app.post("/token")
 async def login(form_data: dict):
@@ -47,6 +57,7 @@ async def login(form_data: dict):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     token = jwt.encode({"username": username}, SECRET_KEY, algorithm="HS256")
     return {"access_token": token, "token_type": "bearer"}
+
 
 @app.get("/users/me")
 async def read_users_me(token: str = Depends(oauth2_scheme)):
@@ -59,6 +70,7 @@ async def read_users_me(token: str = Depends(oauth2_scheme)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
     try:
@@ -67,30 +79,43 @@ async def root():
     except FileNotFoundError:
         return HTMLResponse("<h1>Frontend file not found</h1>", status_code=404)
 
+
 # Endpointy CRUD dla profili wyszukiwania
 @app.get("/profiles", response_model=List[SearchProfile])
-async def get_profiles():
+async def get_profiles(db: Session = Depends(get_db)):
     """Pobiera liste wszystkich profili wyszukiwania."""
-    return search_profiles
+    return db.query(DBSearchProfile).all()
+
 
 @app.post("/profiles", response_model=SearchProfile)
-async def create_profile(profile: SearchProfile):
+async def create_profile(profile: SearchProfile, db: Session = Depends(get_db)):
     """Tworzy nowy profil wyszukiwania."""
-    search_profiles.append(profile)
-    return profile
+    db_profile = DBSearchProfile(**profile.dict(exclude_unset=True))
+    db.add(db_profile)
+    db.commit()
+    db.refresh(db_profile)
+    return db_profile
+
 
 @app.put("/profiles/{profile_id}", response_model=SearchProfile)
-async def update_profile(profile_id: int, updated_profile: SearchProfile):
+async def update_profile(profile_id: int, updated_profile: SearchProfile, db: Session = Depends(get_db)):
     """Aktualizuje istniejacy profil wyszukiwania."""
-    for i, profile in enumerate(search_profiles):
-        if profile.id == profile_id:
-            search_profiles[i] = updated_profile
-            return updated_profile
-    raise HTTPException(status_code=404, detail="Profile not found")
+    db_profile = db.query(DBSearchProfile).filter(DBSearchProfile.id == profile_id).first()
+    if not db_profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    for key, value in updated_profile.dict(exclude_unset=True).items():
+        setattr(db_profile, key, value)
+    db.commit()
+    db.refresh(db_profile)
+    return db_profile
+
 
 @app.delete("/profiles/{profile_id}")
-async def delete_profile(profile_id: int):
+async def delete_profile(profile_id: int, db: Session = Depends(get_db)):
     """Usuwa profil wyszukiwania."""
-    global search_profiles
-    search_profiles = [p for p in search_profiles if p.id != profile_id]
+    db_profile = db.query(DBSearchProfile).filter(DBSearchProfile.id == profile_id).first()
+    if not db_profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    db.delete(db_profile)
+    db.commit()
     return {"message": "Profile deleted successfully"}

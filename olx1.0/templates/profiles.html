@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Manage Profiles</title>
+    <link rel="stylesheet" href="/static/style.css">
     <script>
         async function loadCategories() {
             const response = await fetch('/categories');
@@ -19,16 +20,73 @@
 </head>
 <body>
     <h1>Manage Profiles</h1>
+
+    <!-- Add new profile -->
     <form method="post" action="/profiles">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <label for="keyword">Keyword:</label>
-        <input type="text" id="keyword" name="keyword">
-        <label for="category">Category:</label>
-        <select id="category-select" name="category">
-            <option value="">Select a category</option>
+        <label>Name:</label>
+        <input type="text" name="name" required>
+        <label>Keyword:</label>
+        <input type="text" name="keyword">
+        <label>Min Price:</label>
+        <input type="number" name="min_price" step="0.01">
+        <label>Max Price:</label>
+        <input type="number" name="max_price" step="0.01">
+        <label>Location:</label>
+        <input type="text" name="location">
+        <label>Category:</label>
+        <select id="category-select" name="category"></select>
+        <label>Condition:</label>
+        <select name="condition">
+            <option value="new">New</option>
+            <option value="used">Used</option>
+            <option value="damaged">Damaged</option>
         </select>
         <button type="submit">Add Profile</button>
     </form>
+
+    <!-- Existing profiles -->
+    <h2>Existing Profiles</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Keyword</th>
+                <th>Min Price</th>
+                <th>Max Price</th>
+                <th>Location</th>
+                <th>Category</th>
+                <th>Condition</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for profile in profiles %}
+            <tr>
+                <td>{{ profile.name }}</td>
+                <td>{{ profile.keyword }}</td>
+                <td>{{ profile.min_price }}</td>
+                <td>{{ profile.max_price }}</td>
+                <td>{{ profile.location }}</td>
+                <td>{{ profile.category }}</td>
+                <td>{{ profile.condition }}</td>
+                <td>
+                    <form method="post" action="/profiles/{{ profile.id }}/edit">
+                        <input type="hidden" name="name" value="{{ profile.name }}">
+                        <input type="hidden" name="keyword" value="{{ profile.keyword }}">
+                        <input type="hidden" name="min_price" value="{{ profile.min_price }}">
+                        <input type="hidden" name="max_price" value="{{ profile.max_price }}">
+                        <input type="hidden" name="location" value="{{ profile.location }}">
+                        <input type="hidden" name="category" value="{{ profile.category }}">
+                        <input type="hidden" name="condition" value="{{ profile.condition }}">
+                        <button type="submit">Edit</button>
+                    </form>
+                    <form method="post" action="/profiles/{{ profile.id }}/delete">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

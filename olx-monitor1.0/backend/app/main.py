@@ -8,7 +8,7 @@ from pydantic import BaseModel
 import jwt
 
 from .db import engine, Base, get_db
-from .models import SearchProfile as DBSearchProfile
+from .models import SearchProfile as DBSearchProfile, Listing as DBListing
 from .olx_api import OLXAPIClient  # Import klienta OLX API
 
 # Tworzenie instancji aplikacji FastAPI
@@ -44,6 +44,18 @@ class SearchProfile(BaseModel):
     keyword: Optional[str] = None
     min_price: Optional[float] = None
     max_price: Optional[float] = None
+    location: Optional[str] = None
+    category: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class Listing(BaseModel):
+    id: Optional[int] = None
+    title: str
+    price: Optional[float] = None
+    link: str
     location: Optional[str] = None
     category: Optional[str] = None
 
@@ -139,9 +151,9 @@ async def callback(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/profiles/{profile_id}/listings")
+@app.get("/profiles/{profile_id}/listings", response_model=List[Listing])
 async def get_listings_for_profile(profile_id: int, db: Session = Depends(get_db)):
-    """Fetches listings from OLX API based on a search profile."""
+    """Fetches and saves listings from OLX API based on a search profile."""
     profile = db.query(DBSearchProfile).filter(DBSearchProfile.id == profile_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
@@ -156,6 +168,20 @@ async def get_listings_for_profile(profile_id: int, db: Session = Depends(get_db
 
     try:
         listings = olx_client.get_listings(params)
-        return {"listings": listings}
+        saved_listings = []
+        for listing in listings:
+            if not db.query(DBListing).filter(DBListing.link == listing["link"]).first():
+                new_listing = DBListing(
+                    title=listing["title"],
+                    price=listing.get("price"),
+                    link=listing["link"],
+                    location=listing.get("location"),
+                    category=listing.get("category"),
+                    profile_id=profile_id,
+                )
+                db.add(new_listing)
+                saved_listings.append(new_listing)
+        db.commit()
+        return saved_listings
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

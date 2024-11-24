@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Market Depth</title>
+</head>
+<body>
+    <h1>Market Depth</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Price Range</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in depth %}
+            <tr>
+                <td>{{ entry.range }}</td>
+                <td>{{ entry.count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

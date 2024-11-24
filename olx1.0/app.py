@@ -2,12 +2,16 @@ from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from data_manager import fetch_filtered_ads, get_all_profiles, create_profile, update_profile, delete_profile
+from database import init_db
 
 # Tworzenie instancji FastAPI
 app = FastAPI()
 
 # Konfiguracja szablonow Jinja2
 templates = Jinja2Templates(directory="templates")
+
+# Inicjalizacja bazy danych
+init_db()
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):

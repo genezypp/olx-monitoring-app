@@ -39,11 +39,19 @@ async def manage_profiles(request: Request):
     return templates.TemplateResponse("profiles.html", {"request": request, "profiles": profiles})
 
 @app.post("/profiles")
-async def add_profile(name: str, keyword: str = None, min_price: float = None, max_price: float = None, location: str = None):
+async def add_profile(name: str, keyword: str = None, min_price: float = None, max_price: float = None, location: str = None, category: str = None, condition: str = None):
     """Dodaje nowy profil wyszukiwania."""
-    profile_id = create_profile(name, keyword, min_price, max_price, location)
+    profile_id = create_profile(name, keyword, min_price, max_price, location, category, condition)
     if not profile_id:
         raise HTTPException(status_code=400, detail="Failed to create profile")
+    return RedirectResponse("/profiles", status_code=303)
+
+@app.post("/profiles/{profile_id}/edit")
+async def edit_profile(profile_id: int, name: str, keyword: str = None, min_price: float = None, max_price: float = None, location: str = None, category: str = None, condition: str = None):
+    """Edytuje istniejacy profil wyszukiwania."""
+    success = update_profile(profile_id, name, keyword, min_price, max_price, location, category, condition)
+    if not success:
+        raise HTTPException(status_code=404, detail="Profile not found")
     return RedirectResponse("/profiles", status_code=303)
 
 @app.post("/profiles/{profile_id}/delete")

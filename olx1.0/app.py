@@ -1,25 +1,25 @@
 from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
 from data_manager import fetch_filtered_ads, get_all_profiles, create_profile, update_profile, delete_profile
 from database import init_db
-from fastapi.staticfiles import StaticFiles
-
-# Obs³uga plików statycznych
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Tworzenie instancji FastAPI
-app = FastAPI()
-
-# Konfiguracja szablonow Jinja2
-templates = Jinja2Templates(directory="templates")
 
 # Inicjalizacja bazy danych
 init_db()
 
+# Tworzenie instancji FastAPI
+app = FastAPI()
+
+# Konfiguracja plików statycznych
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Konfiguracja szablonów Jinja2
+templates = Jinja2Templates(directory="templates")
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Strona glowna aplikacji."""
+    """Strona g³ówna aplikacji."""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/ads", response_class=HTMLResponse)
@@ -28,13 +28,13 @@ async def show_ads(request: Request,
                    min_price: float = Query(None),
                    max_price: float = Query(None),
                    location: str = Query(None)):
-    """Wyswietla ogloszenia z bazy danych z filtrowaniem."""
+    """Wyœwietla og³oszenia z bazy danych z filtrowaniem."""
     ads = fetch_filtered_ads(keyword, min_price, max_price, location)
     return templates.TemplateResponse("ads.html", {"request": request, "ads": ads})
 
 @app.get("/profiles", response_class=HTMLResponse)
 async def manage_profiles(request: Request):
-    """Wyswietla strone zarzadzania profilami wyszukiwania."""
+    """Wyœwietla stronê zarz¹dzania profilami wyszukiwania."""
     profiles = get_all_profiles()
     return templates.TemplateResponse("profiles.html", {"request": request, "profiles": profiles})
 

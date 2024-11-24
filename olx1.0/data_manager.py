@@ -1,24 +1,29 @@
-from database import execute_query
+def get_all_profiles():
+    """Pobiera wszystkie profile wyszukiwania."""
+    query = "SELECT * FROM search_profiles"
+    rows = execute_query(query)
+    return [{"id": row[0], "name": row[1], "keyword": row[2], "min_price": row[3], "max_price": row[4], "location": row[5]} for row in rows]
 
-def fetch_filtered_ads(keyword=None, min_price=None, max_price=None, location=None):
-    """Pobierz ogloszenia z uwzglednieniem filtrow."""
-    query = "SELECT * FROM ads WHERE 1=1"
-    params = []
+def create_profile(name, keyword=None, min_price=None, max_price=None, location=None):
+    """Tworzy nowy profil wyszukiwania."""
+    query = "INSERT INTO search_profiles (name, keyword, min_price, max_price, location) VALUES (?, ?, ?, ?, ?)"
+    params = (name, keyword, min_price, max_price, location)
+    execute_query(query, params)
+    return True
 
-    if keyword:
-        query += " AND title LIKE ?"
-        params.append(f"%{keyword}%")
-    if min_price is not None:
-        query += " AND price >= ?"
-        params.append(min_price)
-    if max_price is not None:
-        query += " AND price <= ?"
-        params.append(max_price)
-    if location:
-        query += " AND location LIKE ?"
-        params.append(f"%{location}%")
+def update_profile(profile_id, name, keyword=None, min_price=None, max_price=None, location=None):
+    """Aktualizuje istniejacy profil wyszukiwania."""
+    query = """
+    UPDATE search_profiles
+    SET name = ?, keyword = ?, min_price = ?, max_price = ?, location = ?
+    WHERE id = ?
+    """
+    params = (name, keyword, min_price, max_price, location, profile_id)
+    execute_query(query, params)
+    return True
 
-    return [
-        {"title": row[1], "price": row[2], "location": row[3], "date_added": row[4], "description": row[5]}
-        for row in execute_query(query, params)
-    ]
+def delete_profile(profile_id):
+    """Usuwa profil wyszukiwania."""
+    query = "DELETE FROM search_profiles WHERE id = ?"
+    execute_query(query, (profile_id,))
+    return True

@@ -69,13 +69,13 @@
                         <input type="text" name="location" value="{{ profile.location }}">
                         <select name="category">
                             {% for category in categories %}
-                            <option value="{{ category.id }}" {% if profile.category= =category.id %}selected{% endif %}>{{ category.name }}</option>
+                            <option value="{{ category.id }}" {% if profile.category == category.id %}selected{% endif %}>{{ category.name }}</option>
                             {% endfor %}
                         </select>
                         <select name="condition">
-                            <option value="new" {% if profile.condition= ="new" %}selected{% endif %}>New</option>
-                            <option value="used" {% if profile.condition= ="used" %}selected{% endif %}>Used</option>
-                            <option value="damaged" {% if profile.condition= ="damaged" %}selected{% endif %}>Damaged</option>
+                            <option value="new" {% if profile.condition == "new" %}selected{% endif %}>New</option>
+                            <option value="used" {% if profile.condition == "used" %}selected{% endif %}>Used</option>
+                            <option value="damaged" {% if profile.condition == "damaged" %}selected{% endif %}>Damaged</option>
                         </select>
                         <button type="submit">Edit</button>
                     </form>
